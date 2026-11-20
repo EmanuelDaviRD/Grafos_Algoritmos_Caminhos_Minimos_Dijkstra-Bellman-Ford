@@ -65,3 +65,58 @@ int pop(PilhaAux *p){
     free(temp);
     return v;
 }
+
+Grafo *criarGrafo(int capacidadeInicial){
+    Grafo *g = malloc(sizeof(Grafo));
+    if(g = NULL) return NULL;
+
+    g->cidades = malloc(capacidadeInicial * sizeof(Cidade));
+    if(g->cidades == NULL){
+        free(g);
+        return NULL;
+    }
+
+    g->numCidades = 0;
+    g->capacidade = capacidadeInicial;
+    return g;
+}
+
+int buscarCidadePorNome(Grafo *g, char *nome){
+    for(int i = 0; i < g->numCidades; i++){
+        if(strcmp(g->cidades[i].nome, nome) == 0)
+            return i;
+    }
+    return -1;
+}
+
+int cadastrarCidade(Grafo *g, char *nome){
+    if(strlen(nome) == 0){
+        printf("Nome invalido!\n");
+        return -1;
+    }
+
+    if(buscarCidadePorNome(g, nome) != -1){
+       printf("Cidade '%s' ja esta cadastrada!\n",nome); 
+        return -1;
+    }
+
+    if(g->numCidades == g->capacidade){
+        int novaCapacidade = g->capacidade * 2;
+        Cidade *temp = realloc(g->cidades, novaCapacidade * sizeof(Cidade));
+        if(temp == NULL){
+            printf("Erro ao realocar memoria para cidades!\n");
+            return -1;
+        }
+        g->cidades = temp;
+        g->capacidade = novaCapacidade;
+    }
+
+    int id = g->numCidades;
+    g->cidades[id].id = id;
+    strncpy(g->cidades[id].nome,nome, TAM_NOME - 1);
+    g->cidades[id].nome[TAM_NOME - 1] = '\0';
+    g->cidades[id].listaAdj = NULL;
+    g->numCidades++;
+
+    return id;
+}
