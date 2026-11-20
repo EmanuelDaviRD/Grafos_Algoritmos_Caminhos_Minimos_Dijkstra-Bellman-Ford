@@ -180,3 +180,142 @@ void listarCidades(Grafo *g){
     }
 }
 
+void listarRede(Grafo *g) {
+    if (g->numCidades == 0) {
+        printf("Rede vazia! Nenhuma cidade cadastrada.\n");
+        return;
+    }
+
+    printf("\nMAPA DA REDE (LISTA DE ADJACENCIA)\n");
+    for (int i = 0; i < g->numCidades; i++) {
+        printf("[%d] %s -> ", g->cidades[i].id, g->cidades[i].nome);
+        Aresta *aux = g->cidades[i].listaAdj;
+        if (aux == NULL) {
+            printf("Sem conexoes");
+        }
+        while (aux != NULL) {
+            printf("%s (%.2f km)", g->cidades[aux->destino].nome, aux->distancia);
+            if (aux->prox != NULL) printf(" | ");
+            aux = aux->prox;
+        }
+        printf("\n");
+    }
+}
+
+void calcularMenorCaminho(Grafo *g, int origem, int destino) {
+    if (origem < 0 || origem >= g->numCidades || destino < 0 || destino >= g->numCidades) {
+        printf("ID de cidade invalido!\n");
+        return;
+    }
+
+    int n = g->numCidades;
+    float *dist = malloc(n * sizeof(float));
+    int *anterior = malloc(n * sizeof(int));
+    int *visitado = malloc(n * sizeof(int));
+
+    if (dist == NULL || anterior == NULL || visitado == NULL) {
+        free(dist);
+        free(anterior);
+        free(visitado);
+        printf("Erro de alocacao de memoria!\n");
+        return;
+    }
+
+    for (int i = 0; i < n; i++) {
+        dist[i] = FLT_MAX;
+        anterior[i] = -1;
+        visitado[i] = 0;
+    }
+
+    dist[origem] = 0.0f;
+
+    for (int count = 0; count < n; count++) {
+        int u = -1;
+        float menorDist = FLT_MAX;
+
+        for (int i = 0; i < n; i++) {
+            if (!visitado[i] && dist[i] < menorDist) {
+                menorDist = dist[i];
+                u = i;
+            }
+        }
+
+        if (u == -1 || u == destino) break;
+
+        visitado[u] = 1;
+
+        Aresta *adj = g->cidades[u].listaAdj;
+        while (adj != NULL) {
+            int v = adj->destino;
+            if (!visitado[v] && dist[u] + adj->distancia < dist[v]) {
+                dist[v] = dist[u] + adj->distancia;
+                anterior[v] = u;
+            }
+            adj = adj->prox;
+        }
+    }
+
+    printf("\nRESULTADO DA ROTA (DIJKSTRA)\n");
+    if (dist[destino] == FLT_MAX) {
+        printf("Nao existe caminho entre %s e %s.\n",
+               g->cidades[origem].nome, g->cidades[destino].nome);
+    } else {
+        int *caminho = (int *) malloc(n * sizeof(int));
+        int tamCaminho = 0;
+        int atual = destino;
+
+        while (atual != -1) {
+            caminho[tamCaminho++] = atual;
+            atual = anterior[atual];
+        }
+
+        printf("Trajeto: ");
+        for (int i = tamCaminho - 1; i >= 0; i--) {
+            printf("%s", g->cidades[caminho[i]].nome);
+            if (i > 0) printf(" -> ");
+        }
+        printf("\nCusto total: %.2f km\n", dist[destino]);
+        free(caminho);
+    }
+
+    free(dist);
+    free(anterior);
+    free(visitado);
+}
+
+void executarBFS(Grafo *g, int origem) {
+    if (origem < 0 || origem >= g->numCidades) {
+        printf("ID de cidade invalido!\n");
+        return;
+    }
+
+    int *visitado = (int *) calloc(g->numCidades, sizeof(int));
+    if (visitado == NULL) return;
+
+    FilaAux f;
+    initFila(&f);
+
+    visitado[origem] = 1;
+    enqueue(&f, origem);
+
+    printf("\n--- BUSCA EM LARGURA (BFS) A PARTIR DE %s ---\n", g->cidades[origem].nome);
+    while (f.inicio != NULL) {
+        int u = dequeue(&f);
+        printf("%s", g->cidades[u].nome);
+
+        Aresta *adj = g->cidades[u].listaAdj;
+        while (adj != NULL) {
+            int v = adj->destino;
+            if (!visitado[v]) {
+                visitado[v] = 1;
+                enqueue(&f, v);
+            }
+            adj = adj->prox;
+        }
+
+        if (f.inicio != NULL) printf(" -> ");
+    }
+    printf("\n");
+
+    free(visitado);
+}
