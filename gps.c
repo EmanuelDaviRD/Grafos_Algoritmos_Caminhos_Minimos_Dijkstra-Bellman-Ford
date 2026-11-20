@@ -319,3 +319,138 @@ void executarBFS(Grafo *g, int origem) {
 
     free(visitado);
 }
+
+void executarDFS(Grafo *g, int origem) {
+    if (origem < 0 || origem >= g->numCidades) {
+        printf("ID de cidade invalido!\n");
+        return;
+    }
+
+    int *visitado = (int *) calloc(g->numCidades, sizeof(int));
+    if (visitado == NULL) return;
+
+    PilhaAux p;
+    initPilha(&p);
+    push(&p, origem);
+
+    printf("\n--- BUSCA EM PROFUNDIDADE (DFS) A PARTIR DE %s ---\n", g->cidades[origem].nome);
+    int primeiro = 1;
+    while (p.topo != NULL) {
+        int u = pop(&p);
+
+        if (!visitado[u]) {
+            visitado[u] = 1;
+            if (!primeiro) printf(" -> ");
+            printf("%s", g->cidades[u].nome);
+            primeiro = 0;
+
+            Aresta *adj = g->cidades[u].listaAdj;
+            while (adj != NULL) {
+                if (!visitado[adj->destino]) {
+                    push(&p, adj->destino);
+                }
+                adj = adj->prox;
+            }
+        }
+    }
+    printf("\n");
+
+    free(visitado);
+}
+
+void limparArestas(Grafo *g) {
+    for (int i = 0; i < g->numCidades; i++) {
+        Aresta *aux = g->cidades[i].listaAdj;
+        while (aux != NULL) {
+            Aresta *temp = aux;
+            aux = aux->prox;
+            free(temp);
+        }
+        g->cidades[i].listaAdj = NULL;
+    }
+    g->numCidades = 0;
+}
+
+void salvarDados(Grafo *g, char *nomeArquivo) {
+    FILE *arq = fopen(nomeArquivo, "w");
+    if (arq == NULL) {
+        printf("Erro ao abrir arquivo '%s' para escrita!\n", nomeArquivo);
+        return;
+    }
+
+    fprintf(arq, "%d\n", g->numCidades);
+    for (int i = 0; i < g->numCidades; i++) {
+        fprintf(arq, "%d;%s\n", g->cidades[i].id, g->cidades[i].nome);
+    }
+
+    int totalEstradas = 0;
+    for (int i = 0; i < g->numCidades; i++) {
+        Aresta *aux = g->cidades[i].listaAdj;
+        while (aux != NULL) {
+            if (i < aux->destino) {
+                totalEstradas++;
+            }
+            aux = aux->prox;
+        }
+    }
+
+    fprintf(arq, "%d\n", totalEstradas);
+    for (int i = 0; i < g->numCidades; i++) {
+        Aresta *aux = g->cidades[i].listaAdj;
+        while (aux != NULL) {
+            if (i < aux->destino) {
+                fprintf(arq, "%d;%d;%.2f\n", i, aux->destino, aux->distancia);
+            }
+            aux = aux->prox;
+        }
+    }
+
+    fclose(arq);
+    printf("Dados salvos com sucesso em '%s'!\n", nomeArquivo);
+}
+
+int carregarDados(Grafo *g, char *nomeArquivo) {
+    FILE *arq = fopen(nomeArquivo, "r");
+    if (arq == NULL) {
+        printf("Arquivo '%s' nao encontrado!\n", nomeArquivo);
+        return 0;
+    }
+
+    limparArestas(g);
+
+    int totalCidades = 0;
+    if (fscanf(arq, "%d\n", &totalCidades) != 1) {
+        fclose(arq);
+        return 0;
+    }
+
+    for (int i = 0; i < totalCidades; i++) {
+        int id;
+        char nome[TAM_NOME];
+        if (fscanf(arq, "%d;%49[^\n]\n", &id, nome) == 2) {
+            cadastrarCidade(g, nome);
+        }
+    }
+
+    int totalEstradas = 0;
+    if (fscanf(arq, "%d\n", &totalEstradas) == 1) {
+        for (int i = 0; i < totalEstradas; i++) {
+            int orig, dest;
+            float dist;
+            if (fscanf(arq, "%d;%d;%f\n", &orig, &dest, &dist) == 3) {
+                cadastrarEstrada(g, orig, dest, dist, 0);
+            }
+        }
+    }
+
+    fclose(arq);
+    printf("Dados carregados com sucesso de '%s'!\n", nomeArquivo);
+    return 1;
+}
+
+void liberarGrafo(Grafo *g) {
+    if (g == NULL) return;
+    limparArestas(g);
+    free(g->cidades);
+    free(g);
+}
