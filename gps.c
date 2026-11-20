@@ -25,7 +25,7 @@ void initFila(FilaAux *f){
 
 void enqueue(FilaAux *f, int v){
     NoAux *novo = malloc(sizeof(NoAux));
-    if(novo = NULL) return;
+    if(novo == NULL) return;
     novo->vertice = v;
     novo->prox = NULL;
     if(f->inicio == NULL)
@@ -68,7 +68,7 @@ int pop(PilhaAux *p){
 
 Grafo *criarGrafo(int capacidadeInicial){
     Grafo *g = malloc(sizeof(Grafo));
-    if(g = NULL) return NULL;
+    if(g == NULL) return NULL;
 
     g->cidades = malloc(capacidadeInicial * sizeof(Cidade));
     if(g->cidades == NULL){
@@ -124,7 +124,7 @@ int cadastrarCidade(Grafo *g, char *nome){
 void adicionarArestaDirecionada(Grafo *g, int origem, int destino, float distancia){
     Aresta *aux = g->cidades[origem].listaAdj;
     while(aux != NULL){
-        if(aux-destino == destino){
+        if(aux->destino == destino){
             aux->distancia = distancia;
             return;
         }
