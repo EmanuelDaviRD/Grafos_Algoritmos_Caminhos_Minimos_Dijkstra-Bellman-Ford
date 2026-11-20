@@ -120,3 +120,63 @@ int cadastrarCidade(Grafo *g, char *nome){
 
     return id;
 }
+
+void adicionarArestaDirecionada(Grafo *g, int origem, int destino, float distancia){
+    Aresta *aux = g->cidades[origem].listaAdj;
+    while(aux != NULL){
+        if(aux-destino == destino){
+            aux->distancia = distancia;
+            return;
+        }
+        aux = aux->prox;
+    }
+
+    Aresta *nova = malloc(sizeof(Aresta));
+    if(nova == NULL){
+        printf("Erro ao alocar memoria para estrada!\n");
+        return;
+    }
+    
+    nova->destino = destino;
+    nova->distancia = distancia;
+    nova->prox = g->cidades[origem].listaAdj;
+    g->cidades[origem].listaAdj = nova;
+}
+
+void cadastrarEstrada(Grafo *g, int origem, int destino, float distancia, int exibirMensagem) {
+    if (origem < 0 || origem >= g->numCidades || destino < 0 || destino >= g->numCidades) {
+        if (exibirMensagem) printf("ID de cidade invalido!\n");
+        return;
+    }
+
+    if (origem == destino) {
+        if (exibirMensagem) printf("Origem e destino devem ser cidades diferentes!\n");
+        return;
+    }
+
+    if (distancia <= 0) {
+        if (exibirMensagem) printf("A distancia deve ser maior que zero!\n");
+        return;
+    }
+
+    adicionarArestaDirecionada(g, origem, destino, distancia);
+    adicionarArestaDirecionada(g, destino, origem, distancia);
+
+    if (exibirMensagem) {
+        printf("Estrada cadastrada: %s <-> %s (%.2f km)\n",
+               g->cidades[origem].nome, g->cidades[destino].nome, distancia);
+    }
+}
+
+void listarCidades(Grafo *g){
+    if(g->numCidades == 0){
+        printf("Nenhuma cidade cadastrada.\n");
+        return;
+    }
+
+    printf("\nCIDADES CADASTRADAS\n");
+    for(int i = 0 ;i < g->numCidades; i++){
+        printf("[%d] %s\n",g->cidades[i].id, g->cidades[i].nome);
+    }
+}
+
