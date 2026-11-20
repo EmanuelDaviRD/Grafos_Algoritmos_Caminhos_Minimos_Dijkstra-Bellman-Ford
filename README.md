@@ -1,4 +1,4 @@
-@"
+
 # Sistema de Navegação GPS em C (Grafos)
 
 Projeto desenvolvido para a disciplina de **Estrutura de Dados**, implementando uma malha rodoviária utilizando **Grafos com Lista de Adjacência** e algoritmos clássicos de busca e caminho mínimo.
