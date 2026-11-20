@@ -1,4 +1,4 @@
-@"
+
 # Sistema de Navegação GPS em C (Grafos)
 
 Projeto desenvolvido para a disciplina de **Estrutura de Dados**, implementando uma malha rodoviária utilizando **Grafos com Lista de Adjacência** e algoritmos clássicos de busca e caminho mínimo.
@@ -24,4 +24,3 @@ gcc main.c gps.c -o gps_cli.exe -lm
 gcc main_gui.c gps.c -o gps_gui.exe `$((pkg-config --cflags --libs gtk4).Trim() -split '\s+') -lm
 .\gps_gui.exe
 \`\`\`
-"@ | Out-File -Encoding utf8 README.md
